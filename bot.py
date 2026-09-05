@@ -314,7 +314,7 @@ def on_message(update: Update, context):
         if not name:
             update.message.reply_text("Пожалуйста, напишите ваше имя:")
             return
-        context.user_data["draft"]["name"] = name
+        context.user_data.setdefault("draft", {})["name"] = name
         context.user_data["stage"] = S_PHONE
         update.message.reply_text(config.ASK_PHONE)
 
@@ -323,13 +323,13 @@ def on_message(update: Update, context):
         if not validate_phone_soft(phone):
             update.message.reply_text(config.PHONE_TOO_SHORT)
             return
-        context.user_data["draft"]["phone"] = phone
+        context.user_data.setdefault("draft", {})["phone"] = phone
         context.user_data["stage"] = S_COMMENT
         skip_kb = InlineKeyboardMarkup([[InlineKeyboardButton("Пропустить", callback_data="skip_comment")]])
         update.message.reply_text(config.ASK_COMMENT, reply_markup=skip_kb)
 
     elif stage == S_COMMENT:
-        context.user_data["draft"]["comment"] = text.strip() or "—"
+        context.user_data.setdefault("draft", {})["comment"] = text.strip() or "—"
         context.user_data["stage"] = S_ACTION
         update.message.reply_text(config.ASK_ACTION, reply_markup=action_keyboard())
 
@@ -373,7 +373,7 @@ def on_callback(update, context):
         )
 
     elif data == "skip_comment":
-        context.user_data["draft"]["comment"] = "—"
+        context.user_data.setdefault("draft", {})["comment"] = "—"
         context.user_data["stage"] = S_ACTION
         query.edit_message_text("Комментарий не добавлен.")
         query.message.reply_text(config.ASK_ACTION, reply_markup=action_keyboard())
